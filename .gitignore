@@ -1,0 +1,11 @@
+*.swp
+*.swo
+*~
+.DS_Store
+__pycache__/
+*.pyc
+.env
+cookies.txt
+session.txt
+.idea/
+vscode/
