@@ -1,7 +1,7 @@
 # Darkly v2 - Web Security Audit
 
 **42 School Web Security Challenge**  
-A comprehensive security audit of a deliberately vulnerable web application for learning about OWASP Top 10 vulnerabilities and exploitation techniques.
+A comprehensive security audit of a deliberately vulnerable web application demonstrating OWASP Top 10 vulnerabilities and exploitation techniques.
 
 **Target:** http://localhost:4942  
 **Backend:** PocketBase (http://localhost:8090)  
@@ -9,9 +9,9 @@ A comprehensive security audit of a deliberately vulnerable web application for 
 
 ---
 
-## 🚀 Project Status
+## 🎉 Project Status
 
-**FLAGS FOUND: 9/10 ✅**
+**ALL FLAGS FOUND: 10/10 ✅**
 
 ### Mandatory Flags (6/6) ✅
 | # | Flag | Vulnerability | Severity |
@@ -23,16 +23,17 @@ A comprehensive security audit of a deliberately vulnerable web application for 
 | 5 | FLAG{d3fus3dxml_n3xt_spr1nt_pr0m1s3} | XXE/SSRF | CRITICAL |
 | 6 | FLAG{th3_und3rsc0r3_sl4sh_kn0ws_th3_w4y} | PocketBase Admin | CRITICAL |
 
-### Bonus Flags (3/3) ✅
+### Bonus Flags (4/4) ✅
 | # | Flag | Vulnerability | Severity |
 |---|------|----------------|----------|
 | B1 | FLAG{md5_1s_4_n4m3pl4t3_n0t_4_l0ck} | Unprotected API | HIGH |
 | B2 | FLAG{xss_st0r3d_1s_n0t_4_f34tur3_w1l} | Stored XSS | CRITICAL |
 | B3 | FLAG{d0t_d0t_sl4sh_4ll_th3_w4y_d0wn} | Path Traversal/LFI | HIGH |
+| 10 | FLAG{csrf_4ny_0r1g1n_1s_w3lc0m3} | CSRF | MEDIUM |
 
 ---
 
-## 📁 Exploit Directory Structure
+## 📁 Exploit Directory
 
 exploits/
 ├── 01_idor/ # IDOR - Profile Access
@@ -43,13 +44,9 @@ exploits/
 ├── 06_pocketbase_admin/ # Admin Database Access
 ├── BONUS_01_unprotected_api/ # Unprotected /api/grades
 ├── BONUS_02_stored_xss/ # Stored XSS Bot Session
-└── BONUS_03_path_traversal/ # Path Traversal LFI
+├── BONUS_03_path_traversal/ # Path Traversal LFI
+└── 10_csrf/ # CSRF Origin Bypass
 
-
-Each directory contains:
-- `explanation.md` - Detailed vulnerability analysis
-- `exploit.sh` - Automated exploitation script
-- `flag` - The flag text
 
 ---
 
@@ -66,10 +63,11 @@ Each directory contains:
 ./exploits/05_xxe_ssrf/exploit.sh
 ./exploits/06_pocketbase_admin/exploit.sh
 
-# Bonus flags
+# Bonus + Flag #10
 ./exploits/BONUS_01_unprotected_api/exploit.sh
 ./exploits/BONUS_02_stored_xss/exploit.sh
 ./exploits/BONUS_03_path_traversal/exploit.sh
+./exploits/10_csrf/exploit.sh
 ```
 
 ---
@@ -106,71 +104,92 @@ Each directory contains:
 │ Complete database compromise via admin console │
 └─────────────────────────────────────────────────────┘
 
-BONUS FLAGS:
+BONUS FLAGS & FLAG #10:
 
 FLAG B1: Unprotected /api/grades endpoint
 FLAG B2: Stored XSS steals moderation bot cookies
 FLAG B3: Path traversal accesses private_notes.txt
+FLAG 10: CSRF modifies profile without validation
 
 ---
 
 ## 📊 Vulnerability Summary
 
 ### By OWASP Category
-- **A01 – Broken Access Control**: 5 flags
+- **A01 – Broken Access Control**: 6 flags
 - **A03 – Injection (XSS)**: 2 flags
-- **A05 – Security Misconfiguration**: 4 flags
+- **A05 – Security Misconfiguration**: 5 flags
 
 ### By Severity
 - **CRITICAL**: 7 flags
 - **HIGH**: 2 flags
+- **MEDIUM**: 1 flag
 
 ### By Attack Type
 - **Authentication/Authorization**: 4 flags
-- **Injection/XSS**: 3 flags
+- **Injection/XSS**: 2 flags
 - **File/API Access**: 2 flags
+- **State Manipulation**: 2 flags
 
 ---
 
-## 🔑 Leaked Credentials
+## 🔑 Key Findings
 
-| Account | Email | Password | Role | Leaked By |
-|---------|-------|----------|------|-----------|
-| jdoe | jdoe@student.42.tech | amine | student | Password Reset |
-| benjamin | benjamin@student.42.tech | hacked123 | cadet | Password Reset |
-| admin | admin@42network.local | Darkly42Admin! | god | XXE/SSRF |
-
----
-
-## 🛡️ Key Security Issues
-
-### Top Vulnerabilities
+### Critical Vulnerabilities
 1. **No Authentication** - Profiles/APIs accessible without login
 2. **Predictable Tokens** - Reset tokens are MD5(email)
-3. **No Input Validation** - File uploads unrestricted
-4. **Mass Assignment** - Users can modify own roles
-5. **Unsafe XML Parser** - defusedxml disabled for 6+ months
-6. **Hardcoded Credentials** - Admin password in config
+3. **No Input Validation** - File uploads completely unrestricted
+4. **Mass Assignment** - Users can modify their own roles
+5. **Unsafe XML Parser** - defusedxml disabled, XXE possible
+6. **Hardcoded Admin Credentials** - Password in config file
 7. **Non-HttpOnly Cookies** - XSS can steal sessions
 8. **No Path Canonicalization** - Directory traversal works
 9. **robots.txt False Security** - Disallowed paths are public
-10. **Information Disclosure** - Sensitive paths in headers
+10. **No CSRF Protection** - State changes accept any origin
+
+### Leaked Credentials
+| Account | Email | Password | Role | Leaked By |
+|---------|-------|----------|------|-----------|
+| jdoe | jdoe@student.42.tech | hacked123 | student | Password Reset |
+| benjamin | benjamin@student.42.tech | hacked123 | cadet/staff/god | Password Reset |
+| admin | admin@42network.local | Darkly42Admin! | god | XXE/SSRF |
+
+### Leaked Secrets
+- JWT Secret: `42network`
+- Database location: `/opt/pocketbase/pb_data`
+- Internal endpoints: `/internal/config`, `/api/grades`
+
+---
+
+## 🛡️ Defense Layers Missing
+
+- ❌ No input validation
+- ❌ No output encoding
+- ❌ No authentication checks
+- ❌ No authorization enforcement
+- ❌ No CSRF tokens
+- ❌ No Content Security Policy
+- ❌ No HttpOnly/Secure cookies
+- ❌ No rate limiting
+- ❌ No audit logging
+- ❌ No secret management
 
 ---
 
 ## 📚 Learning Outcomes
 
 This audit demonstrates:
-- How vulnerabilities chain together
+- How vulnerabilities chain together for maximum impact
 - The importance of defense-in-depth
-- Real-world exploitation techniques
-- Impact of configuration mistakes
-- Privilege escalation chains
-- Session hijacking and account takeover
+- Real-world exploitation techniques and tools
+- Impact of configuration mistakes and shortcuts
+- Complete privilege escalation and account takeover
+- Session hijacking and credential theft
+- State manipulation and CSRF
 
 ---
 
-## 🔧 Technologies
+## 🔧 Technologies & Versions
 
 - **Language:** Python 3.11
 - **Framework:** FastAPI 0.104
@@ -189,16 +208,34 @@ This audit demonstrates:
 
 ---
 
-## 📝 Project Timeline
+## 📝 Project Completion
 
-- **Reconnaissance Phase**: Complete ✅
-- **Exploitation Phase**: Complete ✅
-- **Documentation Phase**: Complete ✅
-- **All Flags Found**: 9/10 ✅
+- ✅ **Reconnaissance Phase**: Complete
+- ✅ **Exploitation Phase**: Complete
+- ✅ **All 10 Flags Found**: Complete
+- ✅ **Documentation**: Complete
+- ✅ **Exploit Scripts**: Complete
+
+---
+
+## 🎯 Summary
+
+**Total Vulnerabilities Found:** 10  
+**Critical Issues:** 7  
+**High Issues:** 2  
+**Medium Issues:** 1  
+
+**Impact:** Complete Application Compromise
+- Full database access
+- All user accounts compromised
+- Complete state manipulation
+- Privilege escalation to administrator
+- Information disclosure of all secrets
 
 ---
 
 **Author:** AmineKaddouri  
 **42 School:** Holy Graph Curriculum  
-**Date:** September 2026
+**Date:** September 2026  
+**Status:** COMPLETE ✅
 
