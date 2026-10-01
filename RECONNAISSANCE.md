@@ -47,6 +47,8 @@ echo -n "jdoe@student.42.tech" | md5sum
 ```
 **Impact:** Can reset any account, including admin accounts
 
+![alt text](image.png)
+
 ---
 
 ### Vuln #2: Weak Password - Dictionary Crackable
@@ -56,6 +58,8 @@ echo -n "jdoe@student.42.tech" | md5sum
 **Exploitation:** Brute force with common password lists  
 **Impact:** Account compromise via credential guessing
 
+![alt text](image-1.png)
+
 ---
 
 ### Vuln #3: Mass Assignment - Privilege Escalation
@@ -64,6 +68,8 @@ echo -n "jdoe@student.42.tech" | md5sum
 **Issue:** Accepts "role" parameter with values: visitor, student, cadet, staff, god  
 **Exploitation:** Change role from student → cadet/staff/god  
 **Impact:** Full privilege escalation to admin
+
+"<!- also: PATCH /api/profile accepts a "role" field. the API schema documents which values are valid. -->"
 
 ---
 
